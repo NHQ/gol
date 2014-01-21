@@ -87,7 +87,7 @@ function run(evt){
   for(var i = 0; i < next.shape[0]; i++){
     for(var j = 0; j < next.shape[1]; j++){
       var n = next.get(i, j)
-      gen(i * lifeSize, j * lifeSize, n - 10)
+      gen(i * lifeSize, j * lifeSize, n)
     }
   }
   var z = prev
@@ -100,8 +100,8 @@ ui.board.addEventListener('touchdown', springLife)
 function gen(x, y, z){
   x -= x % lifeSize
   y -= y % lifeSize
-  draw.strokeStyle = (z > 0) ? rgba(0,0,0,1) : rgba(255,255,255,1)
-  draw.fillStyle = (z > 0) ? rgba(255,255,255,1) : rgba(0,0,0,1)
+  draw.strokeStyle = (z >= 10) ? rgba(0,0,0,1) : rgba(255,255,255,1)
+  draw.fillStyle = (z >= 10) ? rgba(255,255,255,1) : rgba(0,0,0,1)
   draw.fillRect(x, y, lifeSize, lifeSize)
   draw.strokeRect(x, y, lifeSize, lifeSize)
 }
