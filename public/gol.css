@@ -21,3 +21,14 @@
 #controls > button{
   display:block;
 }
+#stemps{
+  position:absolute;
+  right:20px;
+  top:300px;
+  margin:0;
+  padding:0;
+  width:123px;
+  height:267px;
+  background-color: rgba(67,67,136,1);
+
+}
