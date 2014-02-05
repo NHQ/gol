@@ -2,7 +2,7 @@ var body = document.body
 var ui = require('getids')(document.body)
 var fs = require('fullscreen');
 var touchdown = require('touchdown');
-var Time = require('../since-when')
+var Time = require('since-when')
 var ndarray = require('ndarray')
 var rules = require('./lib/rules.js')
 require('./lib/reqFrame')()
