@@ -10,7 +10,7 @@ var getCSS = require('./lib/getCSS')
 var drawGrid = require('./lib/grid.js')
 var squarejob = require('./lib/squarejob');
 var w,h,draw,drawS,lifeSize,zom,data,data2;
-
+var Base = new Array();
 var playerTeam = 0;
 
 init()
@@ -24,13 +24,18 @@ function init(){
   zoom = 1;
   ui.board.width = w
   ui.board.height = h
-  drawGrid(draw, w, h, 20)
+  ui.stemps.width = 200
+  ui.stemps.height = 200
+  drawGrid(draw, w, h, lifeSize)
+  drawGrid(drawS, 200, 200, 40)
+  Base[1] = new base(10,10,10,10)
+  Base[2] = new base(40,20,20,10)
 }
 
 
 data = new Uint8ClampedArray(Math.ceil(w / lifeSize) * Math.ceil(h / lifeSize))
 data2 = new Uint8ClampedArray(Math.ceil(w / lifeSize) * Math.ceil(h / lifeSize))
-data3 = new Uint8ClampedArray(Math.ceil(123 / 40) * Math.ceil(267 / 40))
+data3 = new Uint8ClampedArray(Math.ceil(200 / 40) * Math.ceil(200 / 40))
 
 
 for(var x = 0; x < data.length; x++){
@@ -41,7 +46,7 @@ for(x = 0; x<data3.length; x++) data3[x] =100;
 
 var prev = ndarray(data, [Math.ceil(w / lifeSize), Math.ceil(h / lifeSize)]);
 var next = ndarray(data2, [Math.ceil(w / lifeSize), Math.ceil(h / lifeSize)]);
-var stemp = ndarray(data3, [Math.ceil(123 / 40), Math.ceil(267 / 40)]);
+var stemp = ndarray(data3, [Math.ceil(200 / 40), Math.ceil(200 / 40)]);
 ///var stempS = ndarray(data3, [Math.ceil(123 / 40), Math.ceil(267 / 40)]);
 
 window.addEventListener('resize', function(evt){
@@ -61,6 +66,13 @@ window.addEventListener('resize', function(evt){
     window.requestAnimationFrame(draw)
   
   }
+
+  function drawS(t){
+
+    window.requestAnimationFrame(draw)
+  
+  }
+
 
   var anim = 0;
   touchdown.start(ui.board);
@@ -116,6 +128,11 @@ function run(evt){
   
   rules(prev, next)
   squarejob(next, draw, lifeSize)
+
+  for(i=1;i<Base.length;i++)
+     Base[i].mark()
+
+
 //  var j = prev
 //  prev = next
 //  next = j
@@ -153,18 +170,27 @@ var ey = e.detail.y
 
    zstemp = stemp.get( i,  j)
 
-   if(zstemp != 100){           ///cheaking for obsticles 
+   if(zstemp != 100) {           ///cheaking for obsticles 
 
    x = ex + i
    y = ey + j
-   
+   console.log(playerTeam/10)
+   console.log( ((x - Base[playerTeam/10].x) + (y - Base[playerTeam/10].y))) 
+   if( (((x - Base[playerTeam/10].x) + (y - Base[playerTeam/10].y)) <= Base[playerTeam/10].influens) &&
+   ((x - Base[playerTeam/10].x) + (y - Base[playerTeam/10].y)) >= -Base[playerTeam/10].influens )
+   {
+
    zbord = prev.get(x, y)
 
    if(zbord != 100) 
    obs++
    }
+    else obs = 100;
+
+   }
    precheak[n] = zstemp
    n++
+  
   }
   }
   n = 0;
@@ -185,8 +211,12 @@ var ey = e.detail.y
    }
 
   }
-  else
+  else{
+  if(obs<100)
   console.log("cant create", obs, "obsticles");
+  else
+  console.log("out of your inflouens fild");
+  }
 }
 
 
@@ -194,7 +224,7 @@ var ey = e.detail.y
 function gen(x, y, z){
   x -= x % lifeSize
   y -= y % lifeSize
-  draw.strokeStyle = (z === 0) ? rgba(0,70,0,1) : rgba(255,255,255,1)
+  draw.strokeStyle = (z === 0) ? irgba(0,70,0,1) : rgba(255,255,255,1)
   draw.fillStyle = (z === 0) ? rgba(255,255,255,1) : rgba(250,70,100,1)
   draw.fillRect(x, y, lifeSize, lifeSize)
   draw.strokeRect(x, y, lifeSize, lifeSize)
@@ -243,3 +273,33 @@ document.body.addEventListener('click', function(){
 function rgba(){
   return 'rgba('+Array.prototype.join.call(arguments, ',')+')'
 }
+
+
+
+ //////////////////// this suld be in a diffrent file
+
+
+
+function base(x,y,player,influens)
+{
+  this.x = x;
+  this.y = y;
+  this.player = player;
+  this.influens = influens;
+  this.mark = mark;
+  function mark()
+  {
+  
+    var tempx = this.x * lifeSize
+    var tempy = this.y * lifeSize
+    draw.strokeStyle = rgba(10,70,200,1)
+    draw.fillStyle = rgba(250,70,100,1)
+    draw.fillRect(tempx, tempy, lifeSize, lifeSize)
+    draw.strokeRect(tempx, tempy, lifeSize, lifeSize)   
+  
+
+  }
+}
+
+
+
