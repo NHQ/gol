@@ -13,9 +13,10 @@ var pice = require('./lib/pices.js');
 var rgba = require('./lib/rgba.js')
 var w,h,draw,drawS,lifeSize,zom,data,data2,action;
 var pices = new Array();
+var tasks = new Array();
 var playerTeam = 0;
 var tern = 0
-
+time = Time()
 init()
 
 function init(){
@@ -23,7 +24,7 @@ function init(){
   h = window.innerHeight
   draw = ui.board.getContext('2d')
   drawS = ui.stemps.getContext('2d')
-  lifeSize = 10 
+  lifeSize = 5 
   draw.strokeStyle = rgba(255,255,255,1) 
   stempSize = 40
   zoom = 1;
@@ -55,21 +56,25 @@ function run(evt){
       prev.set(i,j,n);
     }
   }
+
+  for(work = tasks.length ; work > 0; work -- ) 	tasks.pop();
 }
 
 
-
+var ePoint 
 ui.stemps.addEventListener('touchdown',drawStemp)
-ui.board.addEventListener('touchdown', function (e){switch(action){
-case "BStemp": springStemp(e)
+ui.board.addEventListener('touchdown', function (e){
+ePoint = e
+switch(action){
+case "BStemp": tasks.push(springStemp(ePoint))
  break;
-case "BBase":builder(e,"base")
+case "BBase":tasks.push(builder(ePoint,"base"))
  break;
-case "BStation" :builder(e,"station")
+case "BStation" :tasks.push(builder(ePoint,"station"))
 break;
-case "BTurent": builder(e,"turent")
+case "BTurent": tasks.push(builder(ePoint,"turent"))
 break;
-case "BFort": builder(e,"fort")
+case "BFort": tasks.push(builder(ePoint,"fort"))
 break;
 
 
@@ -100,7 +105,6 @@ module.exports = {
 
 ui.p1.addEventListener('touchdown',function(){
 playerTeam = 10
-console.log(playerTeam)
 })
 
 ui.p2.addEventListener('touchdown',function(){
@@ -115,7 +119,6 @@ playerTeam = 30
 
 ui.BStemp.addEventListener('touchdown',function(){
 action = "BStemp"
-console.log(action)
 })
 
 
@@ -215,9 +218,16 @@ window.addEventListener('resize', function(evt){
 function stop(){
   window.cancelAnimationFrame(anim)
 }
-function play(){
+var last = 0
+function play(t){
+  if(t - last > 3000){
+    run()
+    last = t
+    anim = window.requestAnimationFrame(play)
+  }
+  else
   anim = window.requestAnimationFrame(play)
-  run()
+  //run()
 }
 function builder(e,type){
 var ex = e.detail.x
