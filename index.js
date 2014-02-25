@@ -24,6 +24,7 @@ function init(){
   draw = ui.board.getContext('2d')
   drawS = ui.stemps.getContext('2d')
   lifeSize = 10 
+  draw.strokeStyle = rgba(255,255,255,1) 
   stempSize = 40
   zoom = 1;
   ui.board.width = w
