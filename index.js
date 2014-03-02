@@ -11,13 +11,21 @@ var drawGrid = require('./lib/grid.js')
 var squarejob = require('./lib/squarejob');
 var pice = require('./lib/pices.js');
 var rgba = require('./lib/rgba.js')
+var energyProses = require('./lib/energyzer.js')
 var w,h,draw,drawS,lifeSize,zom,data,data2,action;
 var pices = new Array();
 var tasks = new Array();
+var energyMesseg = new Array();
+var tempTasks
 var playerTeam = 0;
 var tern = 0
 time = Time()
 init()
+  pices.push(new pice.set("base",10,10,10))
+
+  pices.push(new pice.set("base",10,50,40))
+  pices.push(new pice.set("base",100,10,30))
+  pices.push(new pice.set("base",100,50,20))
 
 function init(){
   w = window.innerWidth
@@ -34,30 +42,39 @@ function init(){
   ui.stemps.height = 200
   drawGrid(draw, w, h, lifeSize)
   drawGrid(drawS, 200, 200, stempSize)
-  pices.push(new pice.set("base",10,10,10))
-
-  pices.push(new pice.set("base",10,50,40))
-  pices.push(new pice.set("base",100,10,30))
-  pices.push(new pice.set("base",100,50,20))
 }
+var nu = 0
 function run(evt){
+  tempTasks = tasks.splice(0,tasks.length-1)
+  for(work = 0 ; work < tempTasks.length; work ++ ){
+	tempTasks[work]
+	
+  }
+
   rules(prev, next)
   squarejob(next, draw, lifeSize)
   tern ++
   for(i=0;i<pices.length;i++){
      pices[i].capture(next)
      pices[i].mark(playerTeam,lifeSize,draw)
-     if(tern === 5 && pices[i].type === "base") pices[i].energy ++
+
+     if(pices[i].type === "base" && pices[i].player === playerTeam){
+	nu++
+	energyMesseg.push("base number" , nu , "posess " , pices[i].energy, "energy ")
+     }
+     if(tern === 10 && pices[i].type === "base") pices[i].energy ++
+
   }
-  if(tern === 5) tern = 0;
+  if(tern === 10) tern = 0;
   for(var i = 0; i < next.shape[0]; i++){
     for(var j = 0; j < next.shape[1]; j++){
       var n = next.get(i, j)
       prev.set(i,j,n);
     }
   }
-
-  for(work = tasks.length ; work > 0; work -- ) 	tasks.pop();
+  nu = 0
+  ui.energy.value = energyMesseg.join(" ")
+  energyMesseg = new Array()
 }
 
 
@@ -168,8 +185,8 @@ var stemp = ndarray(data3, [Math.ceil(200 / 40), Math.ceil(200 / 40)]);
 ///var stempS = ndarray(data3, [Math.ceil(123 / 40), Math.ceil(267 / 40)]);
 
 window.addEventListener('resize', function(evt){
-  init()
-  squarejob(prev, draw, lifeSize)
+//  init()
+//  squarejob(prev, draw, lifeSize)
 //  for(var i = 0; i < next.shape[0]; i++){
 //    for(var j = 0; j < next.shape[1]; j++){
 //      var n = prev.get(i, j)
@@ -220,7 +237,7 @@ function stop(){
 }
 var last = 0
 function play(t){
-  if(t - last > 3000){
+  if(t - last > 500){
     run()
     last = t
     anim = window.requestAnimationFrame(play)
@@ -230,28 +247,37 @@ function play(t){
   //run()
 }
 function builder(e,type){
+var energyPross
 var ex = e.detail.x
 var ey = e.detail.y
    ex -= ex % lifeSize
    ey -= ey % lifeSize
    ex /= lifeSize
    ey /= lifeSize              ////find the offset mous location for refferens
-if(pice.ICanBuild(ex,ey,playerTeam,pices))
- pices.push(new pice.set(type,ex,ey,playerTeam,pices))
-
+if(pice.ICanBuild(ex,ey,playerTeam,pices)){
+	energyPross = energyProses(pices,playerTeam,ex,ey,5,"build")
+	if(energyPross[0]){
+		pices = energyPross[1];
+		pices.push(new pice.set(type,ex,ey,playerTeam,pices))
+	}
+	else
+		console.log("you do not have enugh energy");
+}
 
 
 }
 
 
 
-function springStemp(e){
+function springStemp(point){
 var precheak = new Array();
+var energy
+var tempPices = pices.slice(0)
 var obs = 0;
 var n = 0;
 var zbord , zstemp, x, y;
-var ex = e.detail.x
-var ey = e.detail.y
+var ex = point.detail.x
+var ey = point.detail.y
    ex -= ex % lifeSize
    ey -= ey % lifeSize
    ex /= lifeSize
@@ -262,23 +288,30 @@ var ey = e.detail.y
   for(i = 0 ; i < stemp.shape[0] ; i++){      //// run therow all stemp 2d array
   for(j = 0 ; j < stemp.shape[1] ; j++){
    zstemp = stemp.get( i,  j)
-   if(zstemp != 100) {           ///cheaking for obsticles 
+   if(zstemp === 0) {           /// if ther is a cell in the stemp 
      x = ex + i
      y = ey + j
-     if(pice.ICanPlay(x,y,playerTeam,pices)) {
-       zbord = prev.get(x, y)
-
-       if(zbord != 100) 
-       obs++
+     zbord = prev.get(x,y)
+     if(zbord === 100){
+	energy =  energyProses(tempPices,playerTeam,x,y,1,"spun")
+ 
+     if(energy[0]) {
+	tempPices = energy[1]
+	
      }
      else obs = 100;
     }
+     else obs ++
+   }
    precheak[n] = zstemp
    n++
-  } }
-  n = 0;
+
+  }
+  }
   if(obs === 0)
   {
+     
+n = 0
    for(i = 0 ; i < stemp.shape[0] ; i++){
    for(j = 0 ; j < stemp.shape[1] ; j++){
    if(precheak[n] != 100){
@@ -287,19 +320,21 @@ var ey = e.detail.y
      prev.set(x, y, playerTeam )
      next.set(x, y, playerTeam )  //////// dump the info from stemps  
      
-   squarejob(prev, draw, lifeSize)
      }
+	else 
+		obs = 200;
      n++
    }
    }
-
+   pices = tempPices
   }
-  else{
-  if(obs<100)
-  console.log("cant create", obs, "obsticles");
+  else if(obs<100)
+  	console.log("cant create", obs, "obsticles");
+  else if(obs === 200)
+	console.log("not enugh energy")
   else
-  console.log("out of your inflouens fild");
-  }
+  	console.log("out of your inflouens fild");
+  
 }
 
 function drawStemp(e){
