@@ -21,21 +21,23 @@ var playerTeam = 0;
 var tern = 0
 time = Time()
 init()
-  pices.push(new pice.set("base",10,10,10))
+  pices.push(new pice.set("base",20,10,10))
 
-  pices.push(new pice.set("base",10,50,40))
-  pices.push(new pice.set("base",100,10,30))
+  pices.push(new pice.set("base",30,20,20))
+  pices.push(new pice.set("base",25,15,0))
   pices.push(new pice.set("base",100,50,20))
 
 function init(){
-  w = window.innerWidth
-  h = window.innerHeight
+  w = 2000 //window.innerWidth * 2
+  h = 2000 //window.innerHeight * 2
   draw = ui.board.getContext('2d')
   drawS = ui.stemps.getContext('2d')
-  lifeSize = 5 
+  lifeSize = 20 
   draw.strokeStyle = rgba(255,255,255,1) 
   stempSize = 40
   zoom = 1;
+  ui.board.style.width = w + 'px'
+  ui.board.style.height =h + 'px'
   ui.board.width = w
   ui.board.height = h
   ui.stemps.width = 200
@@ -62,10 +64,10 @@ function run(evt){
 	nu++
 	energyMesseg.push("base number" , nu , "posess " , pices[i].energy, "energy ")
      }
-     if(tern === 10 && pices[i].type === "base") pices[i].energy ++
+     if(tern === 15 && pices[i].type === "base") pices[i].energy ++
 
   }
-  if(tern === 10) tern = 0;
+  if(tern === 15) tern = 0;
   for(var i = 0; i < next.shape[0]; i++){
     for(var j = 0; j < next.shape[1]; j++){
       var n = next.get(i, j)
@@ -128,21 +130,21 @@ ui.p2.addEventListener('touchdown',function(){
 playerTeam = 20
 })
 
-
+/*
 ui.p3.addEventListener('touchdown',function(){
 playerTeam = 30
 })
-
+*/
 
 ui.BStemp.addEventListener('touchdown',function(){
 action = "BStemp"
 })
 
-
+/*
 ui.BBace.addEventListener('touchdown',function(){
 action = "BBase"
 })
-
+*/
 
 ui.BStatian.addEventListener('touchdown',function(){
 action = "BStation"
@@ -155,12 +157,12 @@ action = "BTurent"
 })
 
 
-
+/*
 ui.BFort.addEventListener('touchdown',function(){
 action = "BFort"
 })
 
-
+*/
 
 
 
@@ -205,13 +207,13 @@ window.addEventListener('resize', function(evt){
   touchdown.start(ui.p1)
   touchdown.start(ui.p2)
   touchdown.start(ui.stemps)
-  touchdown.start(ui.stempNum)
-  touchdown.start(ui.stempSave)
+ // touchdown.start(ui.stempNum)
+  //touchdown.start(ui.stempSave)
   touchdown.start(ui.BStemp)
-  touchdown.start(ui.BBace)
-  touchdown.start(ui.p3)
+ // touchdown.start(ui.BBace)
+//  touchdown.start(ui.p3)
  touchdown.start(ui.BStatian)
- touchdown.start(ui.BFort)
+// touchdown.start(ui.BFort)
  touchdown.start(ui.BTurent)
 
 
@@ -321,8 +323,6 @@ n = 0
      next.set(x, y, playerTeam )  //////// dump the info from stemps  
      
      }
-	else 
-		obs = 200;
      n++
    }
    }
