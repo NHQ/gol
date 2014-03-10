@@ -1,4 +1,7 @@
 var body = document.body
+var websocket = require('websocket-stream')
+var stream = websocket('ws://'+window.location.host+'?type=share')
+var decode = require('./lib/decode')
 var ui = require('getids')(document.body)
 var fs = require('fullscreen');
 var touchdown = require('touchdown');
@@ -20,6 +23,28 @@ var tempTasks
 var playerTeam = 0;
 var tern = 0
 time = Time()
+
+/*
+setInterval(function(){
+  var data = new Uint8Array(1024)
+  var x;
+  for(x = 0; x < data.byteLength; x++){
+    data[x] = x % 255
+  }
+  stream.write(JSON.stringify({
+    "metadata" : { 
+      type: "meta tada!", 
+    },  
+    data: data 
+  }))
+}, 1000)
+
+stream.on('data', function(data){
+  console.log(decode(data))//, new Uint8Array(data))
+  
+})
+*/
+
 init()
   pices.push(new pice.set("base",20,10,10))
 
