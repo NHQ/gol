@@ -1,6 +1,6 @@
 var body = document.body
 var websocket = require('websocket-stream')
-var stream = websocket('ws://'+window.location.host+'?type=share')
+var stream = websocket('ws://'+window.location.host+'?type=share,ticktock&interval=1000')
 var decode = require('./lib/decode')
 var ui = require('getids')(document.body)
 var fs = require('fullscreen');
@@ -24,26 +24,103 @@ var playerTeam = 0;
 var tern = 0
 time = Time()
 
-/*
-setInterval(function(){
-  var data = new Uint8Array(1024)
-  var x;
-  for(x = 0; x < data.byteLength; x++){
-    data[x] = x % 255
-  }
-  stream.write(JSON.stringify({
-    "metadata" : { 
-      type: "meta tada!", 
-    },  
-    data: data 
-  }))
-}, 1000)
 
+function command(type,point){
+
+
+var ex = point.detail.x
+var ey = point.detail.y
+   ex -= ex % lifeSize
+   ey -= ey % lifeSize
+   ex /= lifeSize
+   ey /= lifeSize              ////find the offset mous location for refferens
+
+var task = {
+    "metadata" : { 
+      type: type,
+	ex:ex,
+    ey:ey,
+      team:playerTeam,
+	timestamp:new Date().getTime(),
+      length:stemp.shape[0],	 
+    },
+    
+    data: stemp.data, 
+  }
+console.log(tasks) 
+    stream.write(JSON.stringify(task))
+    task.data = stemp
+    tasks.push(task)
+
+}
 stream.on('data', function(data){
-  console.log(decode(data))//, new Uint8Array(data))
+  data = decode(data)
+
+if(data.metadata.type === "ticktock"){
+if(playflag){
+	executer(data.metadata.timestamp)
+	run()
+}}
+ else if(data.metadata.type === "play"){
+	play()
+	timeStamp = data.metadata.timestamp
+ }
+ else if(data.data){
+ data.data  = ndarray(data.data,[data.metadata.length,data.metadata.length])
+data.timing = 0
+tasks.push(data)
+}
   
 })
-*/
+
+
+var safty
+var temparray = new Array();
+var ttemparray = new Array()
+function executer(line){
+
+var safty = 200
+
+for(r = 0 ; r < tasks.length ; r ++){
+
+	for(c=0 ; c < tasks.length ; c ++){
+		if(tasks[r].metadata.timestamp > tasks[c].metadata.timestamp)
+			tasks[r].timing ++
+	}
+ttemparray[tasks[r].timing] = tasks[r]
+	
+	
+}
+console.log(ttemparray)
+
+for(work = 0 ; work < tasks.length;work++){ 
+if(tasks[work].metadata.timestamp < (line + safty)){
+switch(tasks[work].metadata.type){
+
+
+
+
+case "BStemp": springStemp(tasks[work].metadata.ex,tasks[work].metadata.ey,tasks[work].metadata.team,tasks[work].data)
+ break;
+case "BBase": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"base",tasks[work].metadata.team)
+ break;
+case "BStation": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"station",tasks[work].metadata.team)
+break;
+case "BTurent": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"turent",tasks[work].metadata.team)
+break;
+case "BFort": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"fort",tasks[work].metadata.team)
+break;
+
+
+}
+}
+else
+temparray.push(tasks[work])
+}
+tasks = temparray
+temparray=new Array();
+}
+
 
 init()
   pices.push(new pice.set("base",20,10,10))
@@ -72,12 +149,12 @@ function init(){
 }
 var nu = 0
 function run(evt){
-  tempTasks = tasks.splice(0,tasks.length-1)
+ /* tempTasks = tasks.splice(0,tasks.length-1)
   for(work = 0 ; work < tempTasks.length; work ++ ){
 	tempTasks[work]
 	
   }
-
+*/
   rules(prev, next)
   squarejob(next, draw, lifeSize)
   tern ++
@@ -89,10 +166,10 @@ function run(evt){
 	nu++
 	energyMesseg.push("base number" , nu , "posess " , pices[i].energy, "energy ")
      }
-     if(tern === 15 && pices[i].type === "base") pices[i].energy ++
+     if(tern === 1 && pices[i].type === "base") pices[i].energy ++
 
   }
-  if(tern === 15) tern = 0;
+  if(tern === 1) tern = 0;
   for(var i = 0; i < next.shape[0]; i++){
     for(var j = 0; j < next.shape[1]; j++){
       var n = next.get(i, j)
@@ -109,23 +186,13 @@ var ePoint
 ui.stemps.addEventListener('touchdown',drawStemp)
 ui.board.addEventListener('touchdown', function (e){
 ePoint = e
-switch(action){
-case "BStemp": tasks.push(springStemp(ePoint))
- break;
-case "BBase":tasks.push(builder(ePoint,"base"))
- break;
-case "BStation" :tasks.push(builder(ePoint,"station"))
-break;
-case "BTurent": tasks.push(builder(ePoint,"turent"))
-break;
-case "BFort": tasks.push(builder(ePoint,"fort"))
-break;
+command(action,ePoint)
 
 
 
-}
+
 } )
-
+var timeStamp
 ui.stop.addEventListener('touchdown', function(){
   window.cancelAnimationFrame(anim)
 })
@@ -134,6 +201,8 @@ ui.stop.addEventListener('touchdown', function(){
   window.cancelAnimationFrame(anim)
 })
 ui.play.addEventListener('touchdown', function(){
+timeStamp = new Date().getTime
+  stream.write(JSON.stringify({"metadata":{type:"play",	timestamp:new Date().getTime()}}))
   play()
 })
 ui.step.addEventListener('click', run)
@@ -262,30 +331,25 @@ window.addEventListener('resize', function(evt){
 function stop(){
   window.cancelAnimationFrame(anim)
 }
+var playflag = false
 var last = 0
 function play(t){
-  if(t - last > 500){
-    run()
-    last = t
-    anim = window.requestAnimationFrame(play)
-  }
-  else
-  anim = window.requestAnimationFrame(play)
+  
+//    run()
+    playflag=true
+ //   anim = window.requestAnimationFrame(play)
+ // }
+ // else
+//  anim = window.requestAnimationFrame(play)
   //run()
 }
-function builder(e,type){
+function builder(ex,ey,type,team){
 var energyPross
-var ex = e.detail.x
-var ey = e.detail.y
-   ex -= ex % lifeSize
-   ey -= ey % lifeSize
-   ex /= lifeSize
-   ey /= lifeSize              ////find the offset mous location for refferens
-if(pice.ICanBuild(ex,ey,playerTeam,pices)){
-	energyPross = energyProses(pices,playerTeam,ex,ey,5,"build")
+if(pice.ICanBuild(ex,ey,team,pices)){
+	energyPross = energyProses(pices,team,ex,ey,5,"build")
 	if(energyPross[0]){
 		pices = energyPross[1];
-		pices.push(new pice.set(type,ex,ey,playerTeam,pices))
+		pices.push(new pice.set(type,ex,ey,team,pices))
 	}
 	else
 		console.log("you do not have enugh energy");
@@ -296,31 +360,24 @@ if(pice.ICanBuild(ex,ey,playerTeam,pices)){
 
 
 
-function springStemp(point){
+function springStemp(ex,ey,team,Tstemp){
 var precheak = new Array();
 var energy
 var tempPices = pices.slice(0)
 var obs = 0;
 var n = 0;
 var zbord , zstemp, x, y;
-var ex = point.detail.x
-var ey = point.detail.y
-   ex -= ex % lifeSize
-   ey -= ey % lifeSize
-   ex /= lifeSize
-   ey /= lifeSize              ////find the offset mous location for refferens
 
 
-
-  for(i = 0 ; i < stemp.shape[0] ; i++){      //// run therow all stemp 2d array
-  for(j = 0 ; j < stemp.shape[1] ; j++){
-   zstemp = stemp.get( i,  j)
+  for(i = 0 ; i < Tstemp.shape[0] ; i++){      //// run therow all stemp 2d array
+  for(j = 0 ; j < Tstemp.shape[1] ; j++){
+   zstemp = Tstemp.get( i,  j)
    if(zstemp === 0) {           /// if ther is a cell in the stemp 
      x = ex + i
      y = ey + j
      zbord = prev.get(x,y)
      if(zbord === 100){
-	energy =  energyProses(tempPices,playerTeam,x,y,1,"spun")
+	energy =  energyProses(pices,team,x,y,1,"spun")
  
      if(energy[0]) {
 	tempPices = energy[1]
@@ -339,13 +396,13 @@ var ey = point.detail.y
   {
      
 n = 0
-   for(i = 0 ; i < stemp.shape[0] ; i++){
-   for(j = 0 ; j < stemp.shape[1] ; j++){
+   for(i = 0 ; i < Tstemp.shape[0] ; i++){
+   for(j = 0 ; j < Tstemp.shape[1] ; j++){
    if(precheak[n] != 100){
      x = ex + i
      y = ey + j
-     prev.set(x, y, playerTeam )
-     next.set(x, y, playerTeam )  //////// dump the info from stemps  
+     prev.set(x, y, team )
+     next.set(x, y, team )  //////// dump the info from stemps  
      
      }
      n++
