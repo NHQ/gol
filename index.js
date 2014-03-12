@@ -38,16 +38,16 @@ var ey = point.detail.y
 var task = {
     "metadata" : { 
       type: type,
-	ex:ex,
+  ex:ex,
     ey:ey,
       team:playerTeam,
-	timestamp:new Date().getTime(),
+  timestamp:new Date().getTime(),
       length:stemp.shape[0],	 
     },
-    
+
     data: stemp.data, 
   }
-console.log(tasks) 
+//console.log(tasks) 
     stream.write(JSON.stringify(task))
     task.data = stemp
     tasks.push(task)
@@ -58,19 +58,19 @@ stream.on('data', function(data){
 
 if(data.metadata.type === "ticktock"){
 if(playflag){
-	executer(data.metadata.timestamp)
-	run()
+  executer(data.metadata.timestamp)
+  run()
 }}
  else if(data.metadata.type === "play"){
-	play()
-	timeStamp = data.metadata.timestamp
+  play()
+  timeStamp = data.metadata.timestamp
  }
  else if(data.data){
  data.data  = ndarray(data.data,[data.metadata.length,data.metadata.length])
 data.timing = 0
 tasks.push(data)
 }
-  
+
 })
 
 
@@ -79,22 +79,17 @@ var temparray = new Array();
 var ttemparray = new Array()
 function executer(line){
 
-var safty = 200
-
-for(r = 0 ; r < tasks.length ; r ++){
-
-	for(c=0 ; c < tasks.length ; c ++){
-		if(tasks[r].metadata.timestamp > tasks[c].metadata.timestamp)
-			tasks[r].timing ++
-	}
-ttemparray[tasks[r].timing] = tasks[r]
-	
-	
-}
-console.log(ttemparray)
+  var safty = 200
+  var time = line - safty 
+  temparray = tasks.filter(function(e){
+    return e.metadata.timestamp >= time
+  })
+  tasks = tasks.filter(function(e){
+    return e.metadata.timestamp < time
+  })
+  console.log(tasks.slice(), temparray.slice())
 
 for(work = 0 ; work < tasks.length;work++){ 
-if(tasks[work].metadata.timestamp < (line + safty)){
 switch(tasks[work].metadata.type){
 
 
@@ -113,9 +108,6 @@ break;
 
 
 }
-}
-else
-temparray.push(tasks[work])
 }
 tasks = temparray
 temparray=new Array();
@@ -151,8 +143,8 @@ var nu = 0
 function run(evt){
  /* tempTasks = tasks.splice(0,tasks.length-1)
   for(work = 0 ; work < tempTasks.length; work ++ ){
-	tempTasks[work]
-	
+  tempTasks[work]
+
   }
 */
   rules(prev, next)
@@ -163,8 +155,8 @@ function run(evt){
      pices[i].mark(playerTeam,lifeSize,draw)
 
      if(pices[i].type === "base" && pices[i].player === playerTeam){
-	nu++
-	energyMesseg.push("base number" , nu , "posess " , pices[i].energy, "energy ")
+  nu++
+  energyMesseg.push("base number" , nu , "posess " , pices[i].energy, "energy ")
      }
      if(tern === 1 && pices[i].type === "base") pices[i].energy ++
 
@@ -319,13 +311,13 @@ window.addEventListener('resize', function(evt){
   function draw(t){
 
     window.requestAnimationFrame(draw)
-  
+
   }
 
   function drawS(t){
 
     window.requestAnimationFrame(draw)
-  
+
   }
 
 function stop(){
@@ -334,7 +326,7 @@ function stop(){
 var playflag = false
 var last = 0
 function play(t){
-  
+
 //    run()
     playflag=true
  //   anim = window.requestAnimationFrame(play)
@@ -346,13 +338,13 @@ function play(t){
 function builder(ex,ey,type,team){
 var energyPross
 if(pice.ICanBuild(ex,ey,team,pices)){
-	energyPross = energyProses(pices,team,ex,ey,5,"build")
-	if(energyPross[0]){
-		pices = energyPross[1];
-		pices.push(new pice.set(type,ex,ey,team,pices))
-	}
-	else
-		console.log("you do not have enugh energy");
+  energyPross = energyProses(pices,team,ex,ey,5,"build")
+  if(energyPross[0]){
+    pices = energyPross[1];
+    pices.push(new pice.set(type,ex,ey,team,pices))
+  }
+  else
+    console.log("you do not have enugh energy");
 }
 
 
@@ -377,11 +369,11 @@ var zbord , zstemp, x, y;
      y = ey + j
      zbord = prev.get(x,y)
      if(zbord === 100){
-	energy =  energyProses(pices,team,x,y,1,"spun")
- 
+  energy =  energyProses(pices,team,x,y,1,"spun")
+
      if(energy[0]) {
-	tempPices = energy[1]
-	
+  tempPices = energy[1]
+
      }
      else obs = 100;
     }
@@ -394,7 +386,7 @@ var zbord , zstemp, x, y;
   }
   if(obs === 0)
   {
-     
+
 n = 0
    for(i = 0 ; i < Tstemp.shape[0] ; i++){
    for(j = 0 ; j < Tstemp.shape[1] ; j++){
@@ -403,7 +395,7 @@ n = 0
      y = ey + j
      prev.set(x, y, team )
      next.set(x, y, team )  //////// dump the info from stemps  
-     
+
      }
      n++
    }
@@ -411,12 +403,12 @@ n = 0
    pices = tempPices
   }
   else if(obs<100)
-  	console.log("cant create", obs, "obsticles");
+    console.log("cant create", obs, "obsticles");
   else if(obs === 200)
-	console.log("not enugh energy")
+  console.log("not enugh energy")
   else
-  	console.log("out of your inflouens fild");
-  
+    console.log("out of your inflouens fild");
+
 }
 
 function drawStemp(e){
@@ -434,8 +426,8 @@ function drawStemp(e){
   stemp.set(x,y,z)
   squarejob(stemp,drawS,stempSize)
   }
-  
-  
+
+
 
 var screen = fs(document.body);
 
