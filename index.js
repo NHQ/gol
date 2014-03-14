@@ -1,6 +1,6 @@
 var body = document.body
 var websocket = require('websocket-stream')
-var stream = websocket('ws://'+window.location.host+'?type=share,ticktock&interval=1000')
+var stream = websocket('ws://'+window.location.host+'?type=share,ticktock&interval=400')
 var decode = require('./lib/decode')
 var ui = require('getids')(document.body)
 var fs = require('fullscreen');
@@ -23,60 +23,56 @@ var tempTasks
 var playerTeam = 0;
 var tern = 0
 time = Time()
-
+var safty
+var temparray = new Array();
+var ttemparray = new Array()
+var nu = 0
 
 function command(type,point){
-
-
-var ex = point.detail.x
-var ey = point.detail.y
+  var ex = point.detail.x
+  var ey = point.detail.y
    ex -= ex % lifeSize
    ey -= ey % lifeSize
    ex /= lifeSize
    ey /= lifeSize              ////find the offset mous location for refferens
 
-var task = {
-    "metadata" : { 
-      type: type,
-  ex:ex,
-    ey:ey,
-      team:playerTeam,
-  timestamp:new Date().getTime(),
-      length:stemp.shape[0],	 
-    },
+  var task = {
+        "metadata" : { 
+          type: type,
+          ex:ex,
+          ey:ey,
+          team:playerTeam,
+          timestamp:new Date().getTime(),
+          length:stemp.shape[0],	 
+        },
+        data: stemp.data, 
+      }
 
-    data: stemp.data, 
-  }
-//console.log(tasks) 
-    stream.write(JSON.stringify(task))
-    task.data = stemp
-    tasks.push(task)
-
+  stream.write(JSON.stringify(task))
+  task.data = stemp
+  tasks.push(task)
 }
+
 stream.on('data', function(data){
   data = decode(data)
 
-if(data.metadata.type === "ticktock"){
-if(playflag){
-  executer(data.metadata.timestamp)
-  run()
-}}
- else if(data.metadata.type === "play"){
-  play()
-  timeStamp = data.metadata.timestamp
- }
- else if(data.data){
- data.data  = ndarray(data.data,[data.metadata.length,data.metadata.length])
-data.timing = 0
-tasks.push(data)
-}
-
+  if(data.metadata.type === "ticktock"){
+  if(playflag){
+    executer(data.metadata.timestamp)
+    run()
+  }}
+  else if(data.metadata.type === "play"){
+    play()
+    timeStamp = data.metadata.timestamp
+  }
+  else if(data.data){
+    data.data  = ndarray(data.data,[data.metadata.length,data.metadata.length])
+    data.timing = 0
+    tasks.push(data)
+  }
 })
 
 
-var safty
-var temparray = new Array();
-var ttemparray = new Array()
 function executer(line){
 
   var safty = 200
@@ -89,28 +85,24 @@ function executer(line){
   })
   console.log(tasks.slice(), temparray.slice())
 
-for(work = 0 ; work < tasks.length;work++){ 
-switch(tasks[work].metadata.type){
+  for(work = 0 ; work < tasks.length;work++){ 
+    switch(tasks[work].metadata.type){
 
-
-
-
-case "BStemp": springStemp(tasks[work].metadata.ex,tasks[work].metadata.ey,tasks[work].metadata.team,tasks[work].data)
- break;
-case "BBase": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"base",tasks[work].metadata.team)
- break;
-case "BStation": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"station",tasks[work].metadata.team)
-break;
-case "BTurent": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"turent",tasks[work].metadata.team)
-break;
-case "BFort": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"fort",tasks[work].metadata.team)
-break;
-
-
-}
-}
-tasks = temparray
-temparray=new Array();
+      case "BStemp": springStemp(tasks[work].metadata.ex,tasks[work].metadata.ey,tasks[work].metadata.team,tasks[work].data)
+        break;
+      case "BBase": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"base",tasks[work].metadata.team)
+        break;
+      case "BStation": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"station",tasks[work].metadata.team)
+        break;
+      case "BTurent": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"turent",tasks[work].metadata.team)
+        break;
+      case "BFort": builder(tasks[work].metadata.ex,tasks[work].metadata.ey,"fort",tasks[work].metadata.team)
+        break;
+    }
+  }
+  
+  tasks = temparray
+  temparray=new Array();
 }
 
 
@@ -126,7 +118,7 @@ function init(){
   h = 2000 //window.innerHeight * 2
   draw = ui.board.getContext('2d')
   drawS = ui.stemps.getContext('2d')
-  lifeSize = 20 
+  lifeSize = 10 
   draw.strokeStyle = rgba(255,255,255,1) 
   stempSize = 40
   zoom = 1;
@@ -139,14 +131,13 @@ function init(){
   drawGrid(draw, w, h, lifeSize)
   drawGrid(drawS, 200, 200, stempSize)
 }
-var nu = 0
 function run(evt){
- /* tempTasks = tasks.splice(0,tasks.length-1)
-  for(work = 0 ; work < tempTasks.length; work ++ ){
-  tempTasks[work]
+   /* tempTasks = tasks.splice(0,tasks.length-1)
+    for(work = 0 ; work < tempTasks.length; work ++ ){
+    tempTasks[work]
 
-  }
-*/
+    }
+  */
   rules(prev, next)
   squarejob(next, draw, lifeSize)
   tern ++
@@ -158,10 +149,10 @@ function run(evt){
   nu++
   energyMesseg.push("base number" , nu , "posess " , pices[i].energy, "energy ")
      }
-     if(tern === 1 && pices[i].type === "base") pices[i].energy ++
+     if(tern === 3 && pices[i].type === "base") pices[i].energy ++
 
   }
-  if(tern === 1) tern = 0;
+  if(tern === 3) tern = 0;
   for(var i = 0; i < next.shape[0]; i++){
     for(var j = 0; j < next.shape[1]; j++){
       var n = next.get(i, j)
@@ -186,18 +177,16 @@ command(action,ePoint)
 } )
 var timeStamp
 ui.stop.addEventListener('touchdown', function(){
-  window.cancelAnimationFrame(anim)
+//  window.cancelAnimationFrame(anim)
 })
 
-ui.stop.addEventListener('touchdown', function(){
-  window.cancelAnimationFrame(anim)
-})
 ui.play.addEventListener('touchdown', function(){
-timeStamp = new Date().getTime
+  timeStamp = new Date().getTime
   stream.write(JSON.stringify({"metadata":{type:"play",	timestamp:new Date().getTime()}}))
   play()
 })
-ui.step.addEventListener('click', run)
+
+//ui.step.addEventListener('click', run)
 
 
 module.exports = {
@@ -209,11 +198,11 @@ module.exports = {
 
 
 ui.p1.addEventListener('touchdown',function(){
-playerTeam = 10
+  playerTeam = 10
 })
 
 ui.p2.addEventListener('touchdown',function(){
-playerTeam = 20
+  playerTeam = 20
 })
 
 /*
@@ -223,7 +212,7 @@ playerTeam = 30
 */
 
 ui.BStemp.addEventListener('touchdown',function(){
-action = "BStemp"
+  action = "BStemp"
 })
 
 /*
@@ -233,13 +222,13 @@ action = "BBase"
 */
 
 ui.BStatian.addEventListener('touchdown',function(){
-action = "BStation"
+  action = "BStation"
 })
 
 
 
 ui.BTurent.addEventListener('touchdown',function(){
-action = "BTurent"
+  action = "BTurent"
 })
 
 
