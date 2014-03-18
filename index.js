@@ -1,6 +1,6 @@
 var body = document.body
 var websocket = require('websocket-stream')
-var stream = websocket('ws://'+window.location.host+'?type=share,ticktock&interval=400')
+var stream = websocket('ws://'+window.location.hostname + ':' + window.location.port + window.location.pathname+'?type=share,ticktock&interval=400')
 var decode = require('./lib/decode')
 var ui = require('getids')(document.body)
 var fs = require('fullscreen');
@@ -193,7 +193,7 @@ function init(){
   h = 2000 //window.innerHeight * 2
   draw = ui.board.getContext('2d')
   drawS = ui.stemps.getContext('2d')
-  lifeSize = 10 
+  lifeSize = 45 
   draw.strokeStyle = rgba(255,255,255,1) 
   stempSize = 40
   zoom = 1;
