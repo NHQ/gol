@@ -7,6 +7,7 @@ var fs = require('fullscreen');
 var touchdown = require('touchdown');
 var Time = require('since-when')
 var ndarray = require('ndarray')
+var fakefix = require('fakefix')
 var rules = require('./lib/rules.js')
 require('./lib/reqFrame')()
 var getCSS = require('./lib/getCSS')
@@ -203,6 +204,7 @@ function init(){
   ui.board.height = h
   ui.stemps.width = 200
   ui.stemps.height = 200
+  fakefix(ui.stemps)
   drawGrid(draw, w, h, lifeSize)
   drawGrid(drawS, 200, 200, stempSize)
 }
