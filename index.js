@@ -31,8 +31,8 @@ var ttemparray = new Array()
 var nu = 0
 
 function command(type,point){
-  var ex = point.detail.x
-  var ey = point.detail.y
+  var ex = point.detail.x + window.scrollX
+  var ey = point.detail.y + window.scrollY
    ex -= ex % lifeSize
    ey -= ey % lifeSize
    ex /= lifeSize
@@ -205,6 +205,7 @@ function init(){
   ui.stemps.width = 200
   ui.stemps.height = 200
   fakefix(ui.stemps)
+  fakefix(ui.controls)
   drawGrid(draw, w, h, lifeSize)
   drawGrid(drawS, 200, 200, stempSize)
 }
@@ -450,7 +451,7 @@ function springStemp(ex,ey,team,Tstemp){
 }
 
 function drawStemp(e){
-  var x = e.detail.x, y = e.detail.y;
+  var x = e.detail.x + window.scrollX, y = e.detail.y + window.scrollY;
   x -= e.srcElement.offsetLeft
   y -= e.srcElement.offsetTop
   x -= x % stempSize
